@@ -15,7 +15,7 @@ type Page struct {
 
 func main() {
 	
-	tpl, err := template.ParseFiles("tpl.gohtml", "tpl2.gohtml")
+	tpl, err := template.ParseGlob("*.gohtml")
 	if err != nil {
 		log.Fatalln(err)
 	}
