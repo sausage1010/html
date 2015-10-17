@@ -12,7 +12,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = tpl.Execute(os.Stdout, 5*5)
+	err = tpl.Execute(os.Stdout, []int{1, 2, 3, 4, 5})
 	if err != nil {
 		log.Fatalln(err)
 	}
