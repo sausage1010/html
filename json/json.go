@@ -1,0 +1,23 @@
+// json
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func main() {
+	jsonData := `
+	{
+	"name": "Ian Simpson"
+	}
+	`
+	
+	var obj map[string]interface{}
+	
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(obj)
+}
