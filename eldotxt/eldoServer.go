@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"time"
+	"strconv"
 )
 
 
@@ -43,6 +44,26 @@ func statusString(s ExchangeStatus) string{
 	}
 }
 
+type RoboDiffLevel int
+const (
+	EASY RoboDiffLevel = iota
+	MEDIUM
+	HARD
+)
+
+func roboDiffString(d RoboDiffLevel) string {
+	switch d {
+	case EASY:
+		return "Easy"
+	case MEDIUM:
+		return "Medium"
+	case HARD:
+		return "Hard"
+	default:
+		return "ERROR"
+	}
+}
+
 type CommBase int
 const (
 	COPPER CommBase = iota
@@ -55,6 +76,7 @@ const StartPrice int64 = 100
 const StartBalance int64 = 1000
 const PriceHistLen int = 60
 const WinningBal int64 = 1000000000
+const MaxRobots int = 10
 //const WinningBal int64 = 10000
 
 type Commodity struct {
@@ -88,8 +110,8 @@ type Exchange struct {
 	priceHist		map[CommBase][]int64
 	accounts			map[string]Account
 	joinOrder		[]string
-	
-	
+	roboCount		int
+	roboDiff			RoboDiffLevel
 }
 
 
@@ -141,6 +163,55 @@ func (exch *Exchange)handleCommand(command *Command) {
 		case STOP:
 		default:
 			log.Fatalln("Invalid Exchange status")
+		}
+	}
+	case "ROBOT":
+	{
+		n, numErr := strconv.ParseInt(command.Argument1, 10, 8)
+		numRobots := int(n)
+		if numErr != nil {
+			command.Reply <- "Invalid argument: Should be a number between 1 and " + strconv.Itoa(MaxRobots) + ".\r\n"
+			close(command.Reply)
+		} else if numRobots < 1 {
+			command.Reply <- "Invalid argument: Should be a positive number\r\n"
+			close(command.Reply)
+		} else if (numRobots + exch.roboCount) > MaxRobots {
+			if exch.roboCount == 0 {
+				command.Reply <- "Sorry, max number of robots is " + strconv.Itoa(MaxRobots) + "\r\n"
+				close(command.Reply)				
+			} else {
+				command.Reply <- "Sorry, there are already " + strconv.Itoa(exch.roboCount) + " robots. " +
+								"Max is " + strconv.Itoa(MaxRobots) + "\r\n"
+				close(command.Reply)
+			}
+		} else {
+			go AddRobots(exch, numRobots, exch.roboCount, exch.roboDiff)
+			exch.roboCount += numRobots
+			command.Reply <- "OK\r\n"
+			close(command.Reply)
+		}
+	}
+	case "DIFF":
+	{
+		switch command.Argument1 {
+		case "E":
+			exch.roboDiff = EASY
+			command.Reply <- "Robot level set tp EASY\r\n"
+			close(command.Reply)
+		case "M":
+			exch.roboDiff = MEDIUM
+			command.Reply <- "Robot level set tp MEDIUM\r\n"
+			close(command.Reply)
+		case "H":
+			exch.roboDiff = HARD
+			command.Reply <- "Robot level set tp HARD\r\n"
+			close(command.Reply)
+		case "1":  // If no second argument was given, '1' is used as default
+			command.Reply <- "Robot difficulty level is " + roboDiffString(exch.roboDiff) + "\r\n"
+			close(command.Reply)
+		default:
+			command.Reply <- "Invalid level. Please use E, M or H\r\n"
+			close(command.Reply)
 		}
 	}
 	default:

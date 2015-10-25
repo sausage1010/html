@@ -4,6 +4,8 @@ package main
 import (
 )
 
+var	roboStrategies	[]func(*Exchange, Robot, PositionUpdate) (BS string, comm CommBase, amount int64)
+
 func movingAverage(exch *Exchange, comm CommBase, periods int) int64 {
 	if periods < 1 {
 		return 0
@@ -14,3 +16,8 @@ func movingAverage(exch *Exchange, comm CommBase, periods int) int64 {
 	}
 	return avg / int64(periods)
 }
+
+func easyTrade(exch *Exchange, rob Robot, pos PositionUpdate) (BS string, comm CommBase, amount int64) {
+	return
+}
+

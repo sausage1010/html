@@ -124,22 +124,10 @@ func manageCommandLine(exch *Exchange, conn net.Conn, scanner *bufio.Scanner, us
 						
 						var amt int64
 						
-						if len(fs) == 2 {  // Buy or Sell max
-/*							req := PositionReq{
-										UserID:	userName,
-										Reply:	make(chan PositionUpdate),
-									}
-							exch.PositionReqs <- req
-							resp := <- req.Reply
-							
-							if fs[0] == "B" {
-								amt = resp.Position.Balance / resp.Prices[tradeCom]
-							} else {
-								amt = resp.Position.Holdings[tradeCom]
-							}
-*/							
-							amt = getTradeAmount(exch, tradeCom, userName, fs[0], 1)
-							
+						if len(fs) == 2 {  // Buy or Sell max							
+
+							amt = getTradeAmount(exch, tradeCom, userName, fs[0], 1)							
+
 						} else { // An amount has been specified (possibly 'H' for half
 							
 							if fs[2] == "H" { // Buy or Sell half of max

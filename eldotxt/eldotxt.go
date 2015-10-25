@@ -4,11 +4,16 @@ package main
 import (
 	"net"
 	"log"
+	"math/rand"
+	"time"
 )
 
 func main() {
 	
 	log.Println("Initialising exchange ...")
+	
+	rand.Seed(time.Now().UTC().UnixNano())
+	
 	exchange := &Exchange{
 		Commands:		make(chan Command),
 		DisplayReg:		make(chan net.Conn),
@@ -49,6 +54,8 @@ func main() {
 						
 		accounts:		map[string]Account{},
 		joinOrder:		[]string{},
+		roboCount:		0,
+		roboDiff:		MEDIUM,
 	}
 	
 	for _, c := range exchange.commodities {

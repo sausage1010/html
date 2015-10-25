@@ -13,6 +13,7 @@ import (
 
 type Command struct {
 	Command		string
+	Argument1	string
 	Reply		chan string
 }
 
@@ -57,9 +58,9 @@ func controlPrompt(exch *Exchange, conn net.Conn) {
 	io.WriteString(conn, "Available commands:\r\n")
 	switch exch.status {
 	case SUSPEND:
-		io.WriteString(conn, "START | STOP\r\n")
+		io.WriteString(conn, "START | STOP | ROBOT <n> | DIFF <E|M|H>\r\n")
 	case OPEN:
-		io.WriteString(conn, "PAUSE\r\n")
+		io.WriteString(conn, "PAUSE | ROBOT <n> | DIFF <E|M|H>\r\n")
 	default:
 		panic("Invalid Exchange Status")
 	}
@@ -78,10 +79,24 @@ func controller(exch *Exchange, conn net.Conn, controlEstab *bool, m *sync.Mutex
 
 	for scanner.Scan() {
 		
-		command := Command{strings.ToUpper(scanner.Text()), make(chan string)}
-		exch.Commands <- command
-		io.WriteString(conn, <-command.Reply)
-		controlPrompt(exch, conn)
+		ln := strings.ToUpper(scanner.Text())
+		fs := strings.Fields(ln)
+		if len(fs) > 0 {
+			cmd := ""
+			arg1 := ""
+			if len(fs) == 1 {
+				cmd = fs[0]
+				arg1 = "1"
+			} else {
+				cmd = fs[0]
+				arg1 = fs[1]
+			}
+		
+			command := Command{cmd, arg1, make(chan string)}
+			exch.Commands <- command
+			io.WriteString(conn, <-command.Reply)
+			controlPrompt(exch, conn)
+		}
 	}
 	
 	log.Println("Closing Control terminal session.")
