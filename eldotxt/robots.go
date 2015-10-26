@@ -36,8 +36,12 @@ func AddRobots(exch *Exchange, numRobots int, existingRobots int, d RoboDiffLeve
 	
 	// Select a random trade strategy
 	strategies := []roboStrategy{
-		easyTradeFull{},
-		easyTradeHalf{},
+		easyTrade{1},
+		easyTrade{2},
+		profitTrade{1},
+		profitTrade{2},
+		mvgAvgTrade{1, 10, 60},
+		mvgAvgTrade{2, 10, 60},
 	}
 	
 	for i := 0; i < numRobots; i++ {
@@ -94,11 +98,19 @@ func (rob Robot)Run(exch *Exchange) {
 				exch.Trades <- trd
 				conf := <- trd.ConfirmChan
 				
-				if !conf.TradeOK {
+				if conf.TradeOK {
+					if trd.BuySell == "B" {
+						rob.avgPrice[trd.Commodity] = (rob.avgPrice[trd.Commodity] * pos.Position.Holdings[trd.Commodity] +
+													  pos.Prices[trd.Commodity] * trd.Amount) /
+													 (pos.Position.Holdings[trd.Commodity] + trd.Amount)
+					} else if pos.Position.Holdings[trd.Commodity] == trd.Amount {
+							rob.avgPrice[trd.Commodity] = 0
+						}
+						// Just leave the average price the same if we sell some but not all our holding.
+						// Theoretically the average price of any remaining holding could incorporate profit/loss on previous sales
+				} else {
 					log.Println(rob.Name, " trade failed: ", conf.Message)
-				}
-			} else {
-				log.Println(rob.Name, ": Zero trade")
+				}	
 			}
 		}
 	}

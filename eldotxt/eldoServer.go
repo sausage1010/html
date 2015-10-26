@@ -29,6 +29,7 @@ const (
 	SUSPEND ExchangeStatus = iota
 	OPEN
 	STOP
+	RESTART
 )
 
 func statusString(s ExchangeStatus) string{
@@ -39,6 +40,8 @@ func statusString(s ExchangeStatus) string{
 		return "Open"
 	case STOP:
 		return "Closed"
+	case RESTART:
+		return "Restarting"
 	default:
 		return "ERROR"
 	}
@@ -129,7 +132,7 @@ func (exch *Exchange)handleCommand(command *Command) {
 		case OPEN:
 			command.Reply <- "Invalid command: Exchange already running\r\n"
 			close(command.Reply)
-		case STOP:
+		case STOP, RESTART:
 		default:
 			log.Fatalln("Invalid Exchange status")
 		}
@@ -145,7 +148,7 @@ func (exch *Exchange)handleCommand(command *Command) {
 			command.Reply <- "Exchange suspended\r\n"
 			close(command.Reply)
 			sendDisplayUpdate(exch)
-		case STOP:
+		case STOP, RESTART:
 		default:
 			log.Fatalln("Invalid Exchange status")
 		}
@@ -160,11 +163,27 @@ func (exch *Exchange)handleCommand(command *Command) {
 		case OPEN:
 			command.Reply <- "Invalid Command: Please pause the exchange before stopping\r\n"
 			close(command.Reply)
-		case STOP:
+		case STOP, RESTART:
 		default:
 			log.Fatalln("Invalid Exchange status")
 		}
 	}
+	case "RESTART":
+	{
+		switch exch.status {
+		case SUSPEND:
+			exch.status = RESTART
+			command.Reply <- "Restarting exchange ...\r\n"
+			close(command.Reply)
+		case OPEN:
+			command.Reply <- "Invalid Command: Please pause the exchange before restarting\r\n"
+			close(command.Reply)
+		case STOP, RESTART:
+		default:
+			log.Fatalln("Invalid Exchange status")
+		}
+	}
+
 	case "ROBOT":
 	{
 		n, numErr := strconv.ParseInt(command.Argument1, 10, 8)
@@ -300,10 +319,12 @@ func (exch *Exchange)calcPriceEffect(trade Trade) {
 	bsMult := int64(1)
 	if trade.BuySell == "S" {bsMult = -1}
 	suggPrice := int64Max(currPrice + ((r.Int63n(50) - 10) * trade.Amount * bsMult / 4), 1)
+	tmp := []int64{exch.commodities[trade.Commodity].Price}
+	exch.priceHist[trade.Commodity] = append(tmp, exch.priceHist[trade.Commodity][:PriceHistLen - 1]...)
 	exch.commodities[trade.Commodity].Price = int64Min(suggPrice, currPrice * 10)
 }
 
-func (exch *Exchange)Run() {
+func (exch *Exchange)Run() bool {
 	
 	log.Println("Launching Control handler.")
 	go controllerConnHandler(exch)
@@ -315,7 +336,7 @@ func (exch *Exchange)Run() {
 	go traderConnHandler(exch)
 	
 	
-	for exch.status != STOP {
+	for exch.status != STOP && exch.status != RESTART {
 		select {
 			
 		case command := <-exch.Commands:
@@ -447,4 +468,6 @@ func (exch *Exchange)Run() {
 			close(positionReq.Reply)
 		}
 	}
+	
+	return exch.status == RESTART
 }
