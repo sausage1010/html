@@ -157,35 +157,6 @@ func manageCommandLine(exch *Exchange, conn net.Conn, scanner *bufio.Scanner, us
 						io.WriteString(conn, "Invalid order. Please specify a valid commodity.\r\n")
 					}
 					
-					
-/*				} else if len(fs) == 3 {
-					
-					tradeCom, validOrder = validateComm(fs[1])
-					
-					if validOrder {
-						
-						amt, numErr := strconv.ParseInt(fs[2], 10, 64)
-						
-						if numErr == nil {
-							order := Trade{
-										UserID:		userName,
-										BuySell:		fs[0],
-										Commodity:	tradeCom,
-										Amount:		amt,
-										ConfirmChan:	make(chan TradeConfirm),
-							}
-							
-							exch.Trades <- order
-							trConf := <- order.ConfirmChan
-							io.WriteString(conn, trConf.Message + "\n")
-						} else {
-							io.WriteString(conn, "Invalid order. Could not read amount.\n")
-						}
-						
-					} else {
-						io.WriteString(conn, "Invalid order. Please specify a valid commodity.\n")
-					}
-*/
 				} else {
 					io.WriteString(conn, "Invalid order. Too many arguments.\r\n")
 				}

@@ -100,8 +100,6 @@ func (rob Robot)Run(exch *Exchange) {
 			} else {
 				log.Println(rob.Name, ": Zero trade")
 			}
-//		} else {
-//			log.Println(rob.Name, " waiting for exchange to open")
 		}
 	}
 }

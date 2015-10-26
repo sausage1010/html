@@ -320,7 +320,6 @@ func (exch *Exchange)Run() {
 			
 		case command := <-exch.Commands:
 			//Handle command
-//			log.Println("Received command: " + command.Command)
 			exch.handleCommand(&command)
 			
 		case regDispConn := <-exch.DisplayReg:
@@ -351,7 +350,6 @@ func (exch *Exchange)Run() {
 			
 		case traderReg := <-exch.TraderRegs:
 			// Register a trader
-//			log.Println("Received Trader registration.")
 			
 			if _, ok := exch.accounts[traderReg.UserID]; ok {
 				log.Println("Registration failed. UserID ", traderReg.UserID, " already registered.")
@@ -363,7 +361,6 @@ func (exch *Exchange)Run() {
 										}
 				close(traderReg.ConfirmChan)
 			} else {
-//				log.Println("Adding new user: ", traderReg.UserID)
 				
 				acc := Account{
 						Holdings:	make(map[CommBase]int64),
@@ -389,10 +386,8 @@ func (exch *Exchange)Run() {
 			
 		case deregTraderName := <-exch.TraderDeReg:
 			// Deregister a trader
-//			log.Println("Received Trader deregistration request.")
 			
 			if _, ok := exch.accounts[deregTraderName]; ok {
-//				log.Println("Removing user: ", deregTraderName)
 				delete(exch.accounts, deregTraderName)
 				
 				foundID := false
@@ -415,7 +410,6 @@ func (exch *Exchange)Run() {
 			
 		case trade := <-exch.Trades:
 			// Execute a trade
-//			log.Println("Trade received from ", trade.UserID)
 			
 			if exch.status == OPEN {
 				exch.handleTrade(trade)
@@ -437,7 +431,6 @@ func (exch *Exchange)Run() {
 			
 		case positionReq := <-exch.PositionReqs:
 			// Return trading position
-//			log.Println("Position request from ", positionReq.UserID)
 			
 			pos := PositionUpdate{
 					Prices:		make(map[CommBase]int64),
