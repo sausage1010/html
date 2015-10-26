@@ -196,15 +196,15 @@ func (exch *Exchange)handleCommand(command *Command) {
 		switch command.Argument1 {
 		case "E":
 			exch.roboDiff = EASY
-			command.Reply <- "Robot level set tp EASY\r\n"
+			command.Reply <- "Robot level set to EASY\r\n"
 			close(command.Reply)
 		case "M":
 			exch.roboDiff = MEDIUM
-			command.Reply <- "Robot level set tp MEDIUM\r\n"
+			command.Reply <- "Robot level set to MEDIUM\r\n"
 			close(command.Reply)
 		case "H":
 			exch.roboDiff = HARD
-			command.Reply <- "Robot level set tp HARD\r\n"
+			command.Reply <- "Robot level set to HARD\r\n"
 			close(command.Reply)
 		case "1":  // If no second argument was given, '1' is used as default
 			command.Reply <- "Robot difficulty level is " + roboDiffString(exch.roboDiff) + "\r\n"
@@ -320,7 +320,7 @@ func (exch *Exchange)Run() {
 			
 		case command := <-exch.Commands:
 			//Handle command
-			log.Println("Received command: " + command.Command)
+//			log.Println("Received command: " + command.Command)
 			exch.handleCommand(&command)
 			
 		case regDispConn := <-exch.DisplayReg:
@@ -351,7 +351,7 @@ func (exch *Exchange)Run() {
 			
 		case traderReg := <-exch.TraderRegs:
 			// Register a trader
-			log.Println("Received Trader registration.")
+//			log.Println("Received Trader registration.")
 			
 			if _, ok := exch.accounts[traderReg.UserID]; ok {
 				log.Println("Registration failed. UserID ", traderReg.UserID, " already registered.")
@@ -363,7 +363,7 @@ func (exch *Exchange)Run() {
 										}
 				close(traderReg.ConfirmChan)
 			} else {
-				log.Println("Adding new user: ", traderReg.UserID)
+//				log.Println("Adding new user: ", traderReg.UserID)
 				
 				acc := Account{
 						Holdings:	make(map[CommBase]int64),
@@ -389,10 +389,10 @@ func (exch *Exchange)Run() {
 			
 		case deregTraderName := <-exch.TraderDeReg:
 			// Deregister a trader
-			log.Println("Received Trader deregistration request.")
+//			log.Println("Received Trader deregistration request.")
 			
 			if _, ok := exch.accounts[deregTraderName]; ok {
-				log.Println("Removing user: ", deregTraderName)
+//				log.Println("Removing user: ", deregTraderName)
 				delete(exch.accounts, deregTraderName)
 				
 				foundID := false
@@ -415,7 +415,7 @@ func (exch *Exchange)Run() {
 			
 		case trade := <-exch.Trades:
 			// Execute a trade
-			log.Println("Trade received from ", trade.UserID)
+//			log.Println("Trade received from ", trade.UserID)
 			
 			if exch.status == OPEN {
 				exch.handleTrade(trade)
@@ -437,7 +437,7 @@ func (exch *Exchange)Run() {
 			
 		case positionReq := <-exch.PositionReqs:
 			// Return trading position
-			log.Println("Position request from ", positionReq.UserID)
+//			log.Println("Position request from ", positionReq.UserID)
 			
 			pos := PositionUpdate{
 					Prices:		make(map[CommBase]int64),
