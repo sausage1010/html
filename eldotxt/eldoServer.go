@@ -2,7 +2,7 @@
 package main
 
 import (
-	"net"
+//	"net"
 	"log"
 	"math/rand"
 	"time"
@@ -79,7 +79,7 @@ const StartPrice int64 = 100
 const StartBalance int64 = 1000
 const PriceHistLen int = 60
 const WinningBal int64 = 1000000000
-const MaxRobots int = 10
+const MaxRobots int = 15
 //const WinningBal int64 = 10000
 
 type Commodity struct {
@@ -96,8 +96,8 @@ type Account struct {
 type Exchange struct {
 	// External channels
 	Commands			chan Command
-	DisplayReg		chan net.Conn
-	DisplayDeReg		chan net.Conn
+	DisplayReg		chan Display
+	DisplayDeReg		chan Display
 	TraderRegs		chan TraderReg
 	TraderDeReg		chan string
 	Trades			chan Trade
@@ -108,13 +108,14 @@ type Exchange struct {
 	// Internal Variables
 	status			ExchangeStatus
 	statusMessage	string
-	displays			[]net.Conn
+	displays			map[int]Display
 	commodities		[]Commodity
 	priceHist		map[CommBase][]int64
 	accounts			map[string]Account
 	joinOrder		[]string
 	roboCount		int
 	roboDiff			RoboDiffLevel
+	nextDisplayNum	int
 }
 
 
@@ -345,15 +346,20 @@ func (exch *Exchange)Run() bool {
 			
 		case regDispConn := <-exch.DisplayReg:
 			// Register new display
-			log.Println("Received Display connection request.")
-			exch.displays = append(exch.displays, regDispConn)
+			exch.nextDisplayNum++
+			log.Println("Received Display connection request.  ID = ", exch.nextDisplayNum)
+			regDispConn.displayID = exch.nextDisplayNum
+			exch.displays[regDispConn.displayID] = regDispConn
+			regDispConn.displayRegConf <- regDispConn.displayID
+			close(regDispConn.displayRegConf)
+//			exch.displays = append(exch.displays, regDispConn)
 			sendDisplayUpdate(exch)
 			
 		case deregDispConn := <-exch.DisplayDeReg:
 			// Deregister a display
-			log.Println("Received Display disconnection request.")
+			log.Println("Received Display disconnection request id: ", deregDispConn.displayID)
 			// Try and find the connection
-			connIndex := -1
+/*			connIndex := -1
 			for i, conn := range exch.displays {
 				if conn == deregDispConn {
 					connIndex = i
@@ -365,9 +371,11 @@ func (exch *Exchange)Run() bool {
 				log.Println("Can't find connection.  Not deregistered.")
 			} else {
 				exch.displays = append(exch.displays[:connIndex], exch.displays[connIndex+1:]...)
-				deregDispConn.Close()
-				log.Println("Closed display connection at index ", connIndex)
-			}
+				close(deregDispConn.displayChan)
+*/
+			delete(exch.displays, deregDispConn.displayID)
+			log.Println("Closed display connection at index ", deregDispConn.displayID)
+//			}
 			
 		case traderReg := <-exch.TraderRegs:
 			// Register a trader
@@ -436,7 +444,7 @@ func (exch *Exchange)Run() bool {
 				exch.handleTrade(trade)
 				if exch.accounts[trade.UserID].Balance > WinningBal {
 					log.Println(trade.UserID, " is the winner!")
-					time.Sleep(250 * time.Millisecond)  // Maybe I need to allow other display updates to run?
+//					time.Sleep(250 * time.Millisecond)  // Maybe I need to allow other display updates to run?
 					exch.statusMessage = trade.UserID + " is the winner!"
 					exch.status = SUSPEND
 					sendDisplayUpdate(exch)

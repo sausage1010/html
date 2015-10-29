@@ -2,7 +2,7 @@
 package main
 
 import (
-	"net"
+//	"net"
 	"log"
 	"math/rand"
 	"time"
@@ -20,8 +20,8 @@ func main() {
 		
 		exchange := &Exchange{
 			Commands:		make(chan Command),
-			DisplayReg:		make(chan net.Conn),
-			DisplayDeReg:	make(chan net.Conn),
+			DisplayReg:		make(chan Display),
+			DisplayDeReg:	make(chan Display),
 			TraderRegs:		make(chan TraderReg),
 			TraderDeReg:		make(chan string),
 			Trades:			make(chan Trade),
@@ -29,7 +29,7 @@ func main() {
 			
 			status:			SUSPEND,
 			statusMessage:	"",
-			displays:		[]net.Conn{},
+			displays:		make(map[int]Display),
 			
 			commodities:		[]Commodity{
 								{ComType:	COPPER,
@@ -60,6 +60,7 @@ func main() {
 			joinOrder:		[]string{},
 			roboCount:		0,
 			roboDiff:		MEDIUM,
+			nextDisplayNum:	0,
 		}
 		
 		for _, c := range exchange.commodities {
