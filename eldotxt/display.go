@@ -114,7 +114,7 @@ func (d *Display)UpdateManager(deRegChan chan Display) {
 			
 			_, err := io.WriteString(d.terminal, cls)
 			if err !=nil {
-				log.Println("Display connection lost.  Deregistering display")
+				log.Println("Display connection lost.  Deregistering display: ", d.displayID)
 				deRegChan <- *d
 				break
 			} else {
@@ -122,22 +122,8 @@ func (d *Display)UpdateManager(deRegChan chan Display) {
 				d.displayTime = update.timeStamp
 			}
 
-		} else {
-			log.Println("Out of order diaplay update")
 		}
 		
 	}
 }
 
-/*func updateDisplays(deRegChan chan net.Conn, displayList []net.Conn, displayStr string) {
-	for i, conn := range displayList {
-		_, err := io.WriteString(conn, cls)
-		if err !=nil {
-			log.Println("Display connection lost.  Deregistering display: ", i)
-			deRegChan <- conn
-		} else {
-			io.WriteString(conn, displayStr)
-		}
-	}
-}
-*/

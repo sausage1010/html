@@ -100,7 +100,7 @@ func (m mvgAvgTrade)roboTrade(exch *Exchange, rob Robot, pos PositionUpdate) (BS
 		longAvg := movingAverage(pos.PriceHist[thisComm.ComType], m.longTime)
 		shortAvg := movingAverage(pos.PriceHist[thisComm.ComType], m.shortTime)
 		
-		if shortAvg < longAvg {
+		if shortAvg <= longAvg {
 			tmpBS = "B"
 			tmpAmount = (pos.Position.Balance / pos.Prices[thisComm.ComType]) / m.divisor
 		} else {
@@ -118,28 +118,3 @@ func (m mvgAvgTrade)roboTrade(exch *Exchange, rob Robot, pos PositionUpdate) (BS
 	return BS, comm, amount
 }
 
-
-
-/*type easyTradeFull struct {}
-func (e easyTradeFull)roboTrade(exch *Exchange, rob Robot, pos PositionUpdate) (BS string, comm CommBase, amount int64) {
-	return easyTrade(exch, rob, pos, 1)
-}
-
-type easyTradeHalf struct {}
-func (e easyTradeHalf)roboTrade(exch *Exchange, rob Robot, pos PositionUpdate) (BS string, comm CommBase, amount int64) {
-	return easyTrade(exch, rob, pos, 2)
-}
-*/
-/*
-type PositionUpdate struct {
-	Prices		map[CommBase]int64
-	PriceHist	map[CommBase][]int64
-	Position		Account
-	ExchStatus	ExchangeStatus
-}
-
-type Account struct {
-	Holdings		map[CommBase]int64
-	Balance		int64
-}
-*/

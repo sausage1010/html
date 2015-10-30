@@ -40,8 +40,8 @@ func AddRobots(exch *Exchange, numRobots int, existingRobots int, d RoboDiffLeve
 		easyTrade{2},
 		profitTrade{1},
 		profitTrade{2},
-		mvgAvgTrade{1, 10, 60},
-		mvgAvgTrade{2, 10, 60},
+		mvgAvgTrade{1, 10, 30},
+		mvgAvgTrade{2, 10, 30},
 	}
 	
 	for i := 0; i < numRobots; i++ {

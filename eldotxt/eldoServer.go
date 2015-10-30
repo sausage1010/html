@@ -2,7 +2,6 @@
 package main
 
 import (
-//	"net"
 	"log"
 	"math/rand"
 	"time"
@@ -77,7 +76,7 @@ const (
 const NumComm int = 4
 const StartPrice int64 = 100
 const StartBalance int64 = 1000
-const PriceHistLen int = 60
+const PriceHistLen int = 30
 const WinningBal int64 = 1000000000
 const MaxRobots int = 15
 //const WinningBal int64 = 10000
@@ -319,7 +318,8 @@ func (exch *Exchange)calcPriceEffect(trade Trade) {
 	currPrice := exch.commodities[trade.Commodity].Price
 	bsMult := int64(1)
 	if trade.BuySell == "S" {bsMult = -1}
-	suggPrice := int64Max(currPrice + ((r.Int63n(50) - 10) * trade.Amount * bsMult / 4), 1)
+//	suggPrice := int64Max(currPrice + ((r.Int63n(50) - 10) * trade.Amount * bsMult / 4), 1)
+	suggPrice := int64Max(currPrice + ((r.Int63n(5) - 1) * trade.Amount * bsMult / 4), 1)
 	tmp := []int64{exch.commodities[trade.Commodity].Price}
 	exch.priceHist[trade.Commodity] = append(tmp, exch.priceHist[trade.Commodity][:PriceHistLen - 1]...)
 	exch.commodities[trade.Commodity].Price = int64Min(suggPrice, currPrice * 10)
@@ -358,22 +358,9 @@ func (exch *Exchange)Run() bool {
 		case deregDispConn := <-exch.DisplayDeReg:
 			// Deregister a display
 			log.Println("Received Display disconnection request id: ", deregDispConn.displayID)
-			// Try and find the connection
-/*			connIndex := -1
-			for i, conn := range exch.displays {
-				if conn == deregDispConn {
-					connIndex = i
-					break
-				}
-			}
-			// Remove from the list of display connections and close
-			if connIndex == -1 {
-				log.Println("Can't find connection.  Not deregistered.")
-			} else {
-				exch.displays = append(exch.displays[:connIndex], exch.displays[connIndex+1:]...)
-				close(deregDispConn.displayChan)
-*/
 			delete(exch.displays, deregDispConn.displayID)
+			deregDispConn.terminal.Close()
+			close(deregDispConn.displayChan)
 			log.Println("Closed display connection at index ", deregDispConn.displayID)
 //			}
 			
