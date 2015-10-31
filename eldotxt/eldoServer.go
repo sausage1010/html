@@ -448,10 +448,24 @@ func (exch *Exchange)Run() bool {
 		case positionReq := <-exch.PositionReqs:
 			// Return trading position
 			
+			histCopy := make(map[CommBase][]int64)
+			for comIndex, data := range exch.priceHist {
+				histCopy[comIndex] = make([]int64, PriceHistLen, PriceHistLen)
+				copy(histCopy[comIndex], data)
+			}
+			
+			positionCopy := Account{
+								Holdings:	make(map[CommBase]int64),
+								Balance:		exch.accounts[positionReq.UserID].Balance,
+			}
+			for comIndex, data := range exch.accounts[positionReq.UserID].Holdings {
+				positionCopy.Holdings[comIndex] = data
+			}
+			
 			pos := PositionUpdate{
 					Prices:		make(map[CommBase]int64),
-					PriceHist:	exch.priceHist,
-					Position:	exch.accounts[positionReq.UserID],
+					PriceHist:	histCopy,
+					Position:	positionCopy,
 					ExchStatus:	exch.status,
 					}
 			
